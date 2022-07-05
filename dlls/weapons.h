@@ -383,9 +383,12 @@ extern void ClearMultiDamage();
 extern void ApplyMultiDamage(entvars_t* pevInflictor, entvars_t* pevAttacker);
 extern void AddMultiDamage(entvars_t* pevInflictor, CBaseEntity* pEntity, float flDamage, int bitsDamageType);
 
-extern void DecalGunshot(TraceResult* pTrace, int iBulletType);
 extern void SpawnBlood(Vector vecSpot, int bloodColor, float flDamage);
-extern int DamageDecal(CBaseEntity* pEntity, int bitsDamageType);
+
+// RENDERERS START
+extern void DecalGunshot(TraceResult* pTrace, int iBulletType, Vector vecSrc, Vector vecEnd);
+extern char* DamageDecal(CBaseEntity* pEntity, int bitsDamageType);
+// RENDERERS END
 extern void RadiusDamage(Vector vecSrc, entvars_t* pevInflictor, entvars_t* pevAttacker, float flDamage, float flRadius, int iClassIgnore, int bitsDamageType);
 
 typedef struct
@@ -537,6 +540,8 @@ public:
 	void Holster() override;
 	int m_iSwing;
 	TraceResult m_trHit;
+
+	Vector m_vecSrc, m_vecEnd;
 
 	bool UseDecrement() override
 	{

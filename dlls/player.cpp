@@ -1251,6 +1251,10 @@ void CBasePlayer::PlayerDeathThink()
 
 	//ALERT(at_console, "Respawn\n");
 
+	// RENDERERS START
+	m_bUpdateEffects = true;
+	// RENDERERS END
+
 	respawn(pev, (m_afPhysicsFlags & PFLAG_OBSERVER) == 0); // don't copy a corpse if we're in deathcam.
 	pev->nextthink = -1;
 }
@@ -2898,6 +2902,10 @@ void CBasePlayer::Precache()
 
 	m_iUpdateTime = 5; // won't update for 1/2 a second
 
+	// RENDERERS START
+	m_bUpdateEffects = true;
+	// RENDERERS END
+
 	if (gInitHUD)
 		m_fInitHUD = true;
 }
@@ -3875,6 +3883,15 @@ void CBasePlayer::UpdateClientData()
 		InitStatusBar();
 	}
 
+	// RENDERERS START
+	if (m_bUpdateEffects)
+	{
+		ClearEffects();
+		SendInitMessages();
+		m_bUpdateEffects = false;
+	}
+	// RENDERERS END
+
 	if (m_iHideHUD != m_iClientHideHUD)
 	{
 		MESSAGE_BEGIN(MSG_ONE, gmsgHideWeapon, NULL, pev);
@@ -4122,6 +4139,39 @@ void CBasePlayer::UpdateClientData()
 	m_bRestored = false;
 }
 
+// RENDERERS START
+void CBasePlayer ::ClearEffects(void)
+{
+	MESSAGE_BEGIN(MSG_ONE, gmsgSetFog, NULL, pev);
+	WRITE_SHORT(0);
+	WRITE_SHORT(0);
+	WRITE_SHORT(0);
+	WRITE_SHORT(0);
+	WRITE_SHORT(0);
+	MESSAGE_END();
+}
+// Thanks BUzer
+void CBasePlayer ::SendInitMessages(void)
+{
+	edict_t* pEdict = g_engfuncs.pfnPEntityOfEntIndex(1);
+	CBaseEntity* pEntity;
+
+	if (!pEdict)
+		return;
+
+	for (int i = 1; i < gpGlobals->maxEntities; i++, pEdict++)
+	{
+		if (pEdict->free) // Not in use
+			continue;
+
+		pEntity = CBaseEntity::Instance(pEdict);
+		if (!pEntity)
+			continue;
+
+		pEntity->SendInitMessage(this);
+	}
+}
+// RENDERERS END
 
 //=========================================================
 // FBecomeProne - Overridden for the player to set the proper
